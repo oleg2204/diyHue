@@ -25,6 +25,7 @@ bridge_config = defaultdict(lambda:defaultdict(str))
 new_lights = {}
 sensors_state = {}
 
+entertainmentDelay = 4
 
 def updateConfig():
     for sensor in bridge_config["deconz"]["sensors"].keys():
@@ -65,7 +66,7 @@ def entertainmentService():
                                 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
                                 sock.sendto(bytes([r]) + bytes([g]) + bytes([b]) + bytes([bridge_config["lights_address"][str(lightId)]["light_nr"] - 1]), (bridge_config["lights_address"][str(lightId)]["ip"], 2100))
                             else:
-                                if fremeID == 24: # => every seconds, increase in case the destination device is overloaded
+                                if fremeID == entertainmentDelay: # => every seconds, increase in case the destination device is overloaded
                                     if r == 0 and  g == 0 and  b == 0:
                                         if lightStatus[lightId]["on"]:
                                             sendLightRequest(str(lightId), {"on": False, "transitiontime": 3})
@@ -79,7 +80,7 @@ def entertainmentService():
                                     else:
                                         sendLightRequest(str(lightId), {"xy": convert_rgb_xy(r, g, b), "transitiontime": 3})
                             fremeID += 1
-                            if fremeID == 25:
+                            if fremeID == entertainmentDelay+1:
                                 fremeID = 0
                             updateGroupStats(lightId)
                         i = i + 9
@@ -101,7 +102,7 @@ def entertainmentService():
                                 sock.sendto(bytes(convert_xy(x, y, bri)) + bytes([bridge_config["lights_address"][str(lightId)]["light_nr"] - 1]), (bridge_config["lights_address"][str(lightId)]["ip"], 2100))
                             else:
                                 fremeID += 1
-                                if fremeID == 24 : #24 = every seconds, increase in case the destination device is overloaded
+                                if fremeID == entertainmentDelay: #24 = every seconds, increase in case the destination device is overloaded
                                     sendLightRequest(str(lightId), {"xy": [x,y]})
                                     fremeID = 0
                             updateGroupStats(lightId)
